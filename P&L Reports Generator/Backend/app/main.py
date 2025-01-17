@@ -1,7 +1,9 @@
 import pandas as pd
 import openpyxl
 
-file_path = "trial_balance.xlsx"
+
+file_path = "trial_balance.xlsx" # Sample file path
+
 
 #Load and validate the Excel file data.
 def load_and_validate(file_path):
@@ -27,6 +29,35 @@ def load_and_validate(file_path):
     accounts = df.to_dict(orient='records')
     return accounts
 
+
+# Mapping of trial balance account types to predefined categories
+account_mapping = {
+        "Cash": "Assets",
+        "Accounts Receivable": "Assets",
+        "Inventory": "Assets",
+        "Prepaid Insurance": "Assets",
+        "Supplies": "Assets",
+        "Equipment": "Assets",
+        "Accumulated Depreciation - Equipment": "Liabilities",
+        "Accounts Payable": "Liabilities",
+        "Salaries Payable": "Liabilities",
+        "Unearned Revenue": "Liabilities",
+        "Notes Payable (Short-term)": "Liabilities",
+        "Common Stock": "Equity",  
+        "Retained Earnings": "Equity",
+        "Dividends": "Equity",    
+        "Sales Revenue": "Revenue",
+        "Cost of Goods Sold": "Expenses",
+        "Salaries Expense": "Expenses",
+        "Rent Expense": "Expenses",
+        "Utilities Expense": "Expenses",
+        "Depreciation Expense": "Expenses",
+        "Advertising Expense": "Expenses",
+        "Insurance Expense": "Expenses",
+        "Supplies Expense": "Expenses",
+        "Interest Expense": "Expenses"
+    }
+
  
 #initializing account categories to 0 in a dictionary
 categories = {
@@ -37,24 +68,34 @@ categories = {
     "Equity": 0
 }
 
- # Categorize accounts and perform P&L and Balance Sheet calculations
+
+# Categorize accounts and perform P&L and Balance Sheet calculations
 def categorize_and_calculate(categories, accounts):
 
     #Categorizing accounts
+    
     for account in accounts:
         account_type = account["account"]
 
         debit = account["debit"]
         credit = account["credit"]
 
-        amount = debit if debit != 0 else credit
+        mapped_category = account_mapping.get(account_type)
+
+        if mapped_category in categories:
+            amount = debit if debit != 0 else credit
+            categories[mapped_category] += amount
         
-        if account_type in categories:
-            categories[account_type] += amount
+        else:
+            print(f"Unmatched account type: {account_type}")
+
+        print("Final category totals:", categories)
     
     #Calculate Profit and Loss
     net_profit = categories["Revenue"] - categories["Expenses"]
     # Calculate Balance Sheet with the balance sheet equation (Assets = Liabilities + Equity)
+
+    print(net_profit)
     balance_sheet = {
         "Assets": categories["Assets"],
         "Liabilities": categories["Liabilities"],
@@ -67,6 +108,10 @@ def categorize_and_calculate(categories, accounts):
     else:
         print("Not balanced!")
 
+    print(categories["Assets"])
+    print(categories["Liabilities"])
+    print(categories["Equity"])
+
     #Return results
     return {
         "Profit and Loss": {
@@ -77,6 +122,21 @@ def categorize_and_calculate(categories, accounts):
         "Balance Sheet": balance_sheet
     }
 
-accounts = load_and_validate(file_path)
-categorize_and_calculate(categories, accounts)
 
+# SAVE THE RESULTS TO EXCEL FILES
+def save_files(results):
+    # Create DataFrames for P&L and Balance Sheet
+    pnl_df = pd.DataFrame([results["Profit and Loss"]])
+    balance_sheet_df = pd.DataFrame(["Balance Sheet"])
+
+    print(pnl_df)
+    print(balance_sheet_df)
+
+    # Save to Excel files
+    pnl_df.to_excel("profit_and_loss.xlsx", index=False)
+    balance_sheet_df.to_excel("balance_sheet.xlsx")
+
+# Main execution
+accounts = load_and_validate(file_path)
+results = categorize_and_calculate(categories, accounts)
+save_files(results)
