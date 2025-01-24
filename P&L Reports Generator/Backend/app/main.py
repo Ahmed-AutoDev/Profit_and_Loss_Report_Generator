@@ -1,6 +1,4 @@
 import pandas as pd
-import openpyxl
-
 
 file_path = "trial_balance.xlsx" # Sample file path
 
@@ -88,8 +86,6 @@ def categorize_and_calculate(categories, accounts):
         
         else:
             print(f"Unmatched account type: {account_type}")
-
-        print("Final category totals:", categories)
     
     #Calculate Profit and Loss
     net_profit = categories["Revenue"] - categories["Expenses"]
